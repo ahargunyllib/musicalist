@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:musicalist/model/Artist.dart';
 
-// flutter run --dart-define=CLIENT_SECRET=6879f9d57d1f4789b34ada3135a28b9a --dart-define=CLIENT_ID=1d640bc8e1e545bc987275ca91f8bf40
 // ignore: constant_identifier_names
 const CLIENT_SECRET = String.fromEnvironment('CLIENT_SECRET');
 const CLIENT_ID = String.fromEnvironment('CLIENT_ID');
