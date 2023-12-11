@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:musicalist/model/Artist.dart';
+import 'package:musicalist/pages/ArtistPage.dart';
 
 // ignore: constant_identifier_names
 const CLIENT_SECRET = String.fromEnvironment('CLIENT_SECRET');
@@ -20,22 +21,20 @@ Future<String> getToken(String clientId, String clientSecret) async {
     },
     body: {'grant_type': 'client_credentials'},
   );
-  return jsonDecode(response.body)['access_token'];
+  return json.decode(response.body)['access_token'];
 }
 
 Future<List<Artist>> getArtist(String query) async {
-  var url = 'https://api.spotify.com/v1/search?q=${query}&type=artist&limit=10';
-  print('get: ' + url);
+  var url = 'https://api.spotify.com/v1/search?q=$query&type=artist&limit=10';
   var token = await getToken(CLIENT_ID, CLIENT_SECRET);
   final response = await http
       .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
-  final List body = jsonDecode(response.body)['artists']['items'];
-  print('body');
-  print(body.length);
-  print(body.map((item) => item['name']));
-  // print(body.map((item) => Artist.fromJson(item).name));
-  print(body.map((item) => Artist.fromJson(item)).toList().length);
-  return body.map((item) => Artist.fromJson(item)).toList();
+  if (response.statusCode == 200) {
+    List body = json.decode(response.body)['artists']['items'];
+    return body.map((item) => Artist.fromJson(item)).toList();
+  } else {
+    throw Exception('Unexpected error occured!');
+  }
 }
 
 class HomePage extends StatefulWidget {
@@ -48,7 +47,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late TextEditingController _queryController;
-  Future<List<Artist>> artistFuture = getArtist('rea');
+  Future<List<Artist>> artistFuture = getArtist('');
 
   @override
   void initState() {
@@ -66,10 +65,10 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF191414), // Set the background color here
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Center(
             child: Column(
-          mainAxisSize: MainAxisSize.max,
           children: [
             Padding(
                 padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
@@ -116,9 +115,8 @@ class _HomePageState extends State<HomePage> {
                 padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
                 child: Container(
                     constraints: const BoxConstraints.expand(height: 24),
-                    // color: Colors.blue,
                     child: const Text(
-                      'Top Artist',
+                      'Results',
                       style: TextStyle(
                         fontFamily: 'Montserrat',
                         color: Colors.white,
@@ -131,8 +129,6 @@ class _HomePageState extends State<HomePage> {
                 child: FutureBuilder<List<Artist>>(
                     future: artistFuture,
                     builder: (context, snapshot) {
-                      print('snapshot');
-                      print(snapshot.data);
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const CircularProgressIndicator();
                       } else if (snapshot.hasData) {
@@ -140,19 +136,24 @@ class _HomePageState extends State<HomePage> {
                         return ListView.separated(
                           scrollDirection: Axis.vertical,
                           shrinkWrap: true,
-                          itemCount: 1,
+                          itemCount: 7,
                           separatorBuilder: (BuildContext context, int index) {
                             return const Divider();
                           },
                           itemBuilder: (BuildContext context, int index) {
                             final artist = artists[index];
                             return InkWell(
-                                onTap: () {},
+                                onTap: () {
+                                  Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) {
+                                    return ArtistPage(artist: artist);
+                                  }));
+                                },
                                 child: Container(
                                     child: Row(children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(100.0),
-                                    child: Image.network(artist.imageUrl!,
+                                    child: Image.network(artist.imageUrl,
                                         width: 50,
                                         height: 50,
                                         fit: BoxFit.cover),
@@ -163,7 +164,7 @@ class _HomePageState extends State<HomePage> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          artist.name!,
+                                          artist.name,
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 16,
@@ -184,16 +185,6 @@ class _HomePageState extends State<HomePage> {
                                                 fontWeight: FontWeight.w400,
                                               ),
                                             ),
-                                            const SizedBox(width: 16),
-                                            Text(
-                                              artist.genre!,
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontFamily: 'Inter',
-                                                fontWeight: FontWeight.w400,
-                                              ),
-                                            )
                                           ],
                                         ),
                                       ])
@@ -201,7 +192,8 @@ class _HomePageState extends State<HomePage> {
                           },
                         );
                       } else {
-                        return const Text('No data available!');
+                        return const Text('yg bener isinya syg',
+                            style: TextStyle(color: Colors.white));
                       }
                     })),
           ],
