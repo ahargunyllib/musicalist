@@ -18,7 +18,7 @@ Future<List<Album>> getAlbum(String query, token) async {
   }
 }
 
-class ArtistPage extends StatelessWidget {
+class ArtistPage extends StatefulWidget {
   final Artist artist;
   final String token;
 
@@ -26,9 +26,20 @@ class ArtistPage extends StatelessWidget {
       : super(key: key);
 
   @override
+  State<ArtistPage> createState() => _ArtistPageState();
+}
+
+class _ArtistPageState extends State<ArtistPage> {
+  late Future<List<Album>> albumFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    albumFuture = getAlbum(widget.artist.id, widget.token);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    Future<List<Album>> album = getAlbum(artist.id, token);
-    print(album);
     return Scaffold(
         backgroundColor: const Color(0xFF191414),
         body: Stack(children: [
@@ -42,7 +53,7 @@ class ArtistPage extends StatelessWidget {
             },
             blendMode: BlendMode.dstIn,
             child: Image.network(
-              artist.imageUrl,
+              widget.artist.imageUrl,
             ),
           ),
           SafeArea(
@@ -71,7 +82,7 @@ class ArtistPage extends StatelessWidget {
                                 )),
                             const SizedBox(width: 16),
                             Text(
-                              artist.name,
+                              widget.artist.name,
                               style: const TextStyle(
                                 fontFamily: 'Montserrat',
                                 color: Colors.white,
@@ -97,6 +108,76 @@ class ArtistPage extends StatelessWidget {
                             fontWeight: FontWeight.w600,
                           ),
                         ))),
+                Padding(
+                    padding:
+                        const EdgeInsets.only(top: 16, left: 24, right: 24),
+                    child: FutureBuilder<List<Album>>(
+                      future: albumFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          final albums = snapshot.data!;
+                          return ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: snapshot.data!.length < 3
+                                ? snapshot.data!.length
+                                : 3,
+                            separatorBuilder:
+                                (BuildContext context, int index) {
+                              return const Divider();
+                            },
+                            itemBuilder: (context, index) {
+                              final album = albums[index];
+                              return InkWell(
+                                  onTap: () {},
+                                  child: Container(
+                                      child: Row(children: [
+                                    ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(100.0),
+                                      child: Image.network(album.imageUrl,
+                                          width: 50,
+                                          height: 50,
+                                          fit: BoxFit.cover),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            album.name,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 16,
+                                              fontFamily: 'Inter',
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            textAlign: TextAlign.start,
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                album.releaseDate,
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontFamily: 'Inter',
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ])
+                                  ])));
+                            },
+                          );
+                        } else if (snapshot.hasError) {
+                          return Text('${snapshot.error}');
+                        }
+                        return const CircularProgressIndicator();
+                      },
+                    ))
               ],
             )),
           )
