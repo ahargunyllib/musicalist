@@ -12,6 +12,8 @@ Future<List<Album>> getAlbum(String query, token) async {
       .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
   if (response.statusCode == 200) {
     List body = json.decode(response.body)['items'];
+    print('body');
+    print(body);
     return body.map((item) => Album.fromJson(item)).toList();
   } else {
     throw Exception('Unexpected error occured!');
@@ -42,6 +44,7 @@ class _ArtistPageState extends State<ArtistPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: const Color(0xFF191414),
+        resizeToAvoidBottomInset: false,
         body: Stack(children: [
           ShaderMask(
             shaderCallback: (rect) {
@@ -114,10 +117,11 @@ class _ArtistPageState extends State<ArtistPage> {
                     child: FutureBuilder<List<Album>>(
                       future: albumFuture,
                       builder: (context, snapshot) {
+                        print('snapshot');
+                        print(snapshot.data);
                         if (snapshot.hasData) {
                           final albums = snapshot.data!;
                           return ListView.separated(
-                            scrollDirection: Axis.horizontal,
                             itemCount: snapshot.data!.length < 3
                                 ? snapshot.data!.length
                                 : 3,
@@ -125,6 +129,8 @@ class _ArtistPageState extends State<ArtistPage> {
                                 (BuildContext context, int index) {
                               return const Divider();
                             },
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
                             itemBuilder: (context, index) {
                               final album = albums[index];
                               return InkWell(
