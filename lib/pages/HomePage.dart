@@ -8,6 +8,7 @@ import 'package:musicalist/pages/ArtistPage.dart';
 // ignore: constant_identifier_names
 const CLIENT_SECRET = String.fromEnvironment('CLIENT_SECRET');
 const CLIENT_ID = String.fromEnvironment('CLIENT_ID');
+var token;
 
 Future<String> getToken(String clientId, String clientSecret) async {
   var url = 'https://accounts.spotify.com/api/token';
@@ -26,7 +27,7 @@ Future<String> getToken(String clientId, String clientSecret) async {
 
 Future<List<Artist>> getArtist(String query) async {
   var url = 'https://api.spotify.com/v1/search?q=$query&type=artist&limit=10';
-  var token = await getToken(CLIENT_ID, CLIENT_SECRET);
+  token = await getToken(CLIENT_ID, CLIENT_SECRET);
   final response = await http
       .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
   if (response.statusCode == 200) {
@@ -94,7 +95,7 @@ class _HomePageState extends State<HomePage> {
                       controller: _queryController,
                       onSubmitted: (String query) async {
                         setState(() {
-                          artistFuture = getArtist(query);
+                          artistFuture = getArtist(query.toLowerCase());
                         });
                       },
                       decoration: InputDecoration(
@@ -146,7 +147,9 @@ class _HomePageState extends State<HomePage> {
                                 onTap: () {
                                   Navigator.push(context,
                                       MaterialPageRoute(builder: (context) {
-                                    return ArtistPage(artist: artist);
+                                    return ArtistPage(
+                                        artist: artist,
+                                        token: token);
                                   }));
                                 },
                                 child: Container(
