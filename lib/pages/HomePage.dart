@@ -148,8 +148,7 @@ class _HomePageState extends State<HomePage> {
                                   Navigator.push(context,
                                       MaterialPageRoute(builder: (context) {
                                     return ArtistPage(
-                                        artist: artist,
-                                        token: token);
+                                        artist: artist, token: token);
                                   }));
                                 },
                                 child: Container(
