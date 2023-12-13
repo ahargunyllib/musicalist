@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:musicalist/model/Artist.dart';
 import 'package:musicalist/pages/ArtistPage.dart';
+import 'package:musicalist/components/HeaderText.dart';
+import 'package:musicalist/components/CustomCard.dart';
 
 // ignore: constant_identifier_names
 const CLIENT_SECRET = String.fromEnvironment('CLIENT_SECRET');
@@ -26,7 +28,7 @@ Future<String> getToken(String clientId, String clientSecret) async {
 }
 
 Future<List<Artist>> getArtist(String query) async {
-  var url = 'https://api.spotify.com/v1/search?q=$query&type=artist&limit=10';
+  var url = 'https://api.spotify.com/v1/search?q=$query&type=artist';
   token = await getToken(CLIENT_ID, CLIENT_SECRET);
   final response = await http
       .get(Uri.parse(url), headers: {'Authorization': 'Bearer $token'});
@@ -70,22 +72,14 @@ class _HomePageState extends State<HomePage> {
       body: SafeArea(
         child: Center(
             child: Column(
+          mainAxisSize: MainAxisSize.max,
           children: [
             Padding(
                 padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
                 child: Container(
                     constraints: const BoxConstraints.expand(height: 44),
                     // color: Colors.blue,
-                    child: const Text(
-                      'Musicalist',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      textAlign: TextAlign.center,
-                    ))),
+                    child: const HeaderText(text: 'Musicalist'))),
             Padding(
                 padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
                 child: Container(
@@ -109,41 +103,33 @@ class _HomePageState extends State<HomePage> {
                           hintStyle: const TextStyle(
                               color: Color(0xFFBDBDBD),
                               fontSize: 16,
-                              fontFamily: 'Inter',
+                              fontFamily: 'Montserrat',
                               fontWeight: FontWeight.w500)),
                     ))),
             Padding(
                 padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
                 child: Container(
                     constraints: const BoxConstraints.expand(height: 24),
-                    child: const Text(
-                      'Results',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ))),
-            Padding(
-                padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
-                child: FutureBuilder<List<Artist>>(
-                    future: artistFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      } else if (snapshot.hasData) {
-                        final artists = snapshot.data!;
-                        return ListView.separated(
-                          scrollDirection: Axis.vertical,
-                          shrinkWrap: true,
-                          itemCount: 7,
-                          separatorBuilder: (BuildContext context, int index) {
-                            return const Divider();
-                          },
-                          itemBuilder: (BuildContext context, int index) {
-                            final artist = artists[index];
-                            return InkWell(
+                    child: const Header2Text(text: 'Results'))),
+            const SizedBox(height: 8),
+            FutureBuilder<List<Artist>>(
+                future: artistFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasData) {
+                    final artists = snapshot.data!;
+                    return Expanded(
+                        child: ListView.separated(
+                      scrollDirection: Axis.vertical,
+                      shrinkWrap: true,
+                      itemCount: 10,
+                      separatorBuilder: (BuildContext context, int index) {
+                        return const Divider();
+                      },
+                      itemBuilder: (BuildContext context, int index) {
+                        final artist = artists[index];
+                        return InkWell(
                                 onTap: () {
                                   Navigator.push(context,
                                       MaterialPageRoute(builder: (context) {
@@ -151,53 +137,14 @@ class _HomePageState extends State<HomePage> {
                                         artist: artist, token: token);
                                   }));
                                 },
-                                child: Container(
-                                    child: Row(children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(100.0),
-                                    child: Image.network(artist.imageUrl,
-                                        width: 50,
-                                        height: 50,
-                                        fit: BoxFit.cover),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          artist.name,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontFamily: 'Inter',
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          textAlign: TextAlign.start,
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          children: [
-                                            Text(
-                                              '${artist.followers} Followers',
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontFamily: 'Inter',
-                                                fontWeight: FontWeight.w400,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ])
-                                ])));
-                          },
-                        );
-                      } else {
-                        return const Text('yg bener isinya syg',
-                            style: TextStyle(color: Colors.white));
-                      }
-                    })),
+                                child:CustomCardArtist(artist: artist));
+                      },
+                    ));
+                  } else {
+                    return const Text('No Artist Found!',
+                        style: TextStyle(color: Colors.white));
+                  }
+                }),
           ],
         )),
       ),

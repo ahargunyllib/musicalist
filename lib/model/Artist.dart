@@ -15,7 +15,9 @@ class Artist {
     return Artist(
       id: json['id'],
       name: json['name'],
-      imageUrl: json['images'][0]['url'],
+      imageUrl: json['images'].isNotEmpty
+          ? json['images'][0]['url']
+          : 'https://upload.wikimedia.org/wikipedia/commons/d/d2/Solid_white.png?20060513000852',
       followers: json['followers']['total'],
     );
   }
