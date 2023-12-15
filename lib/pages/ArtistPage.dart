@@ -71,9 +71,12 @@ class _ArtistPageState extends State<ArtistPage> {
               ).createShader(Rect.fromLTRB(0, 0, rect.width, rect.height));
             },
             blendMode: BlendMode.dstIn,
-            child: Image.network(widget.artist.imageUrl),
+            child: Image.network(
+              widget.artist.imageUrl,
+              ),
           ),
           SafeArea(
+            child: SingleChildScrollView(
             child: Center(
                 child: Column(
               mainAxisSize: MainAxisSize.max,
@@ -174,7 +177,7 @@ class _ArtistPageState extends State<ArtistPage> {
                     ))
               ],
             )),
-          )
+          ))
         ]));
   }
 }
