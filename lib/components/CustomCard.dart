@@ -12,7 +12,7 @@ class CustomCardArtist extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
         padding: const EdgeInsets.only(left: 24, right: 24),
-        child: Container(
+        child: Flexible(child: Container(
             decoration: const BoxDecoration(
               color: Color.fromARGB(100, 0, 0, 0),
               backgroundBlendMode: BlendMode.overlay,
@@ -28,14 +28,14 @@ class CustomCardArtist extends StatelessWidget {
                         width: 50, height: 50, fit: BoxFit.cover),
                   ),
                   const SizedBox(width: 16),
-                  Column(
+                  Expanded(child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Header3Text(text: artist.name),
                         const SizedBox(height: 8),
                         Header4Text(text: '${artist.followers} Followers')
-                      ])
-                ]))));
+                      ]))
+                ])))));
   }
 }
 
